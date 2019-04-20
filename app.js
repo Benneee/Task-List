@@ -22,6 +22,9 @@ loadAllEventListeners();
 function loadAllEventListeners() {
   // This event listener is concerned with submitting a new task
   form.addEventListener('submit', addNewTask);
+
+  // This event listener is concerned with removing a task
+  taskList.addEventListener('click', removeTask);
 }
 
 // Creating the addNewTask function
@@ -70,4 +73,21 @@ function addNewTask(e) {
 
   // To prevent the normal behaviour of page reloadding by the form element
   e.preventDefault();
+}
+
+function removeTask(e) {
+  // We need to target the link element which is the parent element of the icon element
+  // We also check if the link element contains the class 'delete-item'
+  if (e.target.parentElement.classList.contains('delete-item')) {
+    // Because we want to delete the whole list item
+    // We have to traverse the DOM to get to the list item element
+    // This happens to be the grandparent element of the icon element
+    if (confirm('Are you sure?')) {
+      // So we call remove on the list item element when we find it
+      // The remove() method removes a node
+      let targetElement = e.target.parentElement.parentElement;
+      targetElement.remove();
+      console.log('[list item removed]', targetElement);
+    }
+  }
 }
