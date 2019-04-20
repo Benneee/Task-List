@@ -31,6 +31,12 @@ function loadAllEventListeners() {
 
   // This event listener is concerned with filtering through the tasks for matches
   filter.addEventListener('keyup', filterTasks);
+
+  // A DOM Event to get our tasks from Local Storage
+  document.addEventListener('DOMContentLoaded', getTasks);
+
+  // A DOM Event to change the color of the body
+  document.addEventListener('mousemove', changeColor);
 }
 
 // CREATING NEW TASK
@@ -72,12 +78,69 @@ function addNewTask(e) {
     // Append the li to the ul
     taskList.appendChild(li);
 
+    // Store the task in LS
+    storeTaskInLS(taskInput.value);
+
     // Clear the input
     taskInput.value = '';
   }
 
   // To prevent the normal behaviour of page reloadding by the form element
   e.preventDefault();
+}
+
+// STORE TASK IN LOCAL STORAGE
+function storeTaskInLS(task) {
+  // Local Storage only accepts strings
+  // So we initialise a variable 'tasks'
+  let tasks;
+
+  // We check whether there is an existing task in LS,
+  // If there isn't we set tasks to become an array,
+  // Else, we parse the task in LS and push it into the array.
+  // Either way, an array must exist.
+  tasks = localStorage.getItem('tasks') === null ? [] : JSON.parse(localStorage.getItem('tasks'));
+
+  // Push any existing or new task to the tasks array
+  tasks.push(task);
+
+  // Set Local Storage to receive the task
+  localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
+// GET TASKS FROM LS
+function getTasks() {
+  // Local Storage only accepts strings
+  // So we initialise a variable 'tasks'
+  let tasks;
+
+  // We check whether there is an existing task in LS,
+  // If there isn't we set tasks to become an array,
+  // Else, we parse the task in LS and push it into the array.
+  // Either way, an array must exist.
+  tasks = localStorage.getItem('tasks') === null ? [] : JSON.parse(localStorage.getItem('tasks'));
+
+  tasks.forEach(task => {
+    // We create a new task with the task we are getting from the Local Storage
+    const li = document.createElement('li');
+
+    // Add a class of collection-item to the list item
+    li.className = 'collection-item';
+    li.appendChild(document.createTextNode(task));
+
+    // Create the link
+    const link = document.createElement('a');
+    link.className = 'delete-item secondary-content';
+
+    // Add an icon to the link
+    link.innerHTML = '<i class="fa fa-remove"></i>';
+
+    // Append the link to the li
+    li.appendChild(link);
+
+    // Append the li to the ul
+    taskList.appendChild(li);
+  });
 }
 
 // REMOVE SELECTED TASK
@@ -92,10 +155,32 @@ function removeTask(e) {
       // So we call remove on the list item element when we find it
       // The remove() method removes a node
       let targetElement = e.target.parentElement.parentElement;
+
+      // REMOVE TASK FROM LOCAL STORAGE - Delete Permanently
+      removeTaskFromLS(targetElement);
+
       targetElement.remove();
       // console.log('[list item removed]', targetElement);
     }
   }
+}
+
+function removeTaskFromLS(taskItem) {
+  // Initialise a task variable
+  let tasks;
+
+  // Run comparison to check content in LS
+  tasks = localStorage.getItem('tasks') === null ? [] : JSON.parse(localStorage.getItem('tasks'));
+
+  // Run a forEach loop to go through each task in array created and perform the deletion
+  tasks.forEach((task, index) => {
+    if (taskItem.textContent === task) {
+      tasks.splice(index, 1);
+    }
+  });
+
+  // Call local storage to reset its collection - the array of tasks
+  localStorage.setItem('tasks', JSON.stringify(tasks));
 }
 
 // CLEAR ALL TASKS
@@ -107,6 +192,14 @@ function clearTasks(e) {
   while (taskList.firstChild) {
     taskList.removeChild(taskList.firstChild);
   }
+
+  // Clear tasks from Local Storage
+  clearTasksFromLS();
+}
+
+// CLEAR TASKS FROM LOCAL STORAGE
+function clearTasksFromLS() {
+  localStorage.clear();
 }
 
 // FILTER THROUGFH TASKS
@@ -127,4 +220,18 @@ function filterTasks(e) {
 
     task.style.display = item.toLowerCase().indexOf(text) !== -1 ? 'block' : 'none';
   });
+}
+
+// Let's Play With The Background Color
+
+// Get the target element
+const header = document.querySelector('nav');
+const body = document.querySelector('body');
+
+// Get the two color values and Change the color of the NavBar
+function changeColor(e) {
+  let colorX = e.offsetX;
+  let colorY = e.offsetY;
+  body.style.backgroundColor = `rgb(${colorX}, ${colorY}, 35)`;
+  // console.log('[Mouse moveX]:', e.offsetX, '[Mouse moveY]:', e.offsetY);
 }
